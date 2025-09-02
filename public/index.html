@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TON Wallet Checker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0088cc;
+            --secondary-color: #166c99;
+            --accent-color: #35c66f;
+            --background-color: #f0f6ff;
+            --card-color: #ffffff;
+            --text-color: #222233;
+            --text-light: #666677;
+            --border-radius: 10px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.5;
+            padding: 12px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px 0;
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .input-section {
+            background: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #d0d7e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: var(--transition);
+            background: #fafbff;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(0, 136, 204, 0.25);
+        }
+
+        input::placeholder {
+            color: #8899aa;
+        }
+
+        .network-selector {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .network-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d0d7e0;
+            border-radius: 8px;
+            background: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .network-btn.active {
+            border-color: var(--primary-color);
+            background-color: rgba(0, 136, 204, 0.1);
+            color: var(--primary-color);
+        }
+
+        .balance-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .balance-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .balance-label {
+            font-size: 0.9rem;
+            opacity: 0.85;
+            margin-bottom: 5px;
+        }
+
+        .balance-amount {
+            font-size: 1.8rem;
+            font-weight: 800;
+        }
+
+        .balance-icon {
+            font-size: 2.2rem;
+            opacity: 0.9;
+        }
+
+        .results-section {
+            background: var(--card-color);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+        }
+
+        .wallet-card {
+            border: 1px solid #e5e9f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .wallet-card.has-balance {
+            border-left: 3px solid var(--accent-color);
+            background: linear-gradient(to right, rgba(53, 198, 111, 0.08), transparent);
+        }
+
+        .wallet-card.no-balance {
+            border-left: 3px solid #e5e9f0;
+        }
+
+        .wallet-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .wallet-version {
+            font-weight: 700;
+            color: var(--primary-color);
+            font-size: 0.95rem;
+        }
+
+        .wallet-address {
+            font-family: monospace;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            word-break: break-all;
+            margin-bottom: 8px;
+        }
+
+        .wallet-balance {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .wallet-balance.zero {
+            color: var(--text-light);
+        }
+
+        .found-badge {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid rgba(0, 136, 204, 0.2);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: var(--text-light);
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .balance-amount {
+                font-size: 1.6rem;
+            }
+            
+            .input-section, .results-section {
+                padding: 12px;
+            }
+            
+            h1 {
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .balance-section {
+                padding: 12px;
+            }
+            
+            .balance-amount {
+                font-size: 1.4rem;
+            }
+            
+            .network-selector {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-wallet"></i>
+            </div>
+            <h1>TON Wallet Checker</h1>
+        </header>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="mnemonic" placeholder="Введите фразу или любой текст">
+            </div>
+            
+            <div class="network-selector">
+                <div class="network-btn active" data-network="mainnet">Mainnet</div>
+                <div class="network-btn" data-network="testnet">Testnet</div>
+            </div>
+        </div>
+
+        <div class="balance-section">
+            <div class="balance-info">
+                <div class="balance-amount" id="total-balance">0 TON</div>
+            </div>
+            <div class="balance-icon">
+                <i class="fas fa-coins"></i>
+            </div>
+        </div>
+
+        <div class="results-section">
+            <div id="result">
+                <div class="loading">
+                    <p>Введите текст для проверки кошельков</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>TON Wallet Checker</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const mnemonicInput = document.getElementById('mnemonic');
+            const networkButtons = document.querySelectorAll('.network-btn');
+            const resultContainer = document.getElementById('result');
+            const totalBalanceElement = document.getElementById('total-balance');
+            let currentNetwork = 'mainnet';
+            let currentRequest = null;
+            let typingTimer = null;
+            const typingDelay = 20; // 20ms задержка
+
+            // Обработчики для переключения сети
+            networkButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    networkButtons.forEach(btn => btn.classList.remove('active'));
+                    this.classList.add('active');
+                    currentNetwork = this.getAttribute('data-network');
+                    checkWallet();
+                });
+            });
+
+            // Функция проверки кошелька
+            async function checkWallet() {
+                const mnemonic = mnemonicInput.value;
+                const network = currentNetwork;
+
+                // Отменяем предыдущий запрос если он есть
+                if (currentRequest) {
+                    currentRequest.abort();
+                }
+
+                // Показываем индикатор загрузки
+                resultContainer.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p>Проверяем кошельки...</p>
+                    </div>
+                `;
+
+                const controller = new AbortController();
+                currentRequest = controller;
+
+                try {
+                    const response = await fetch('/check-wallet', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({mnemonic, network}),
+                        signal: controller.signal
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        resultContainer.innerHTML = `
+                            <div style="color: #ff4757; text-align: center; padding: 15px;">
+                                <i class="fas fa-exclamation-circle" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+                                <p>Ошибка: ${data.error}</p>
+                            </div>
+                        `;
+                    } else {
+                        let totalBalance = 0;
+                        let html = '';
+                        
+                        data.forEach(wallet => {
+                            totalBalance += wallet.balance;
+                            const hasBalance = wallet.balance > 0;
+                            
+                            html += `
+                                <div class="wallet-card ${hasBalance ? 'has-balance' : 'no-balance'}">
+                                    <div class="wallet-header">
+                                        <span class="wallet-version">${wallet.version}</span>
+                                        ${hasBalance ? '<span class="found-badge"><i class="fas fa-coins"></i> Найден</span>' : ''}
+                                    </div>
+                                    <div class="wallet-address">${wallet.address}</div>
+                                    <div class="wallet-balance ${wallet.balance === 0 ? 'zero' : ''}">
+                                        ${wallet.balance} TON
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        // Обновляем общий баланс
+                        totalBalanceElement.textContent = `${totalBalance} TON`;
+                        
+                        if (html === '') {
+                            html = '<p style="text-align: center; color: var(--text-light); padding: 15px;">Кошельки не найдены</p>';
+                        }
+                        
+                        resultContainer.innerHTML = html;
+                    }
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        resultContainer.innerHTML = `
+                            <div style="color: #ff4757; text-align: center; padding: 15px;">
+                                <i class="fas fa-exclamation-circle" style="font-size: 1.5rem; margin-bottom: 8px;"></i>
+                                <p>Ошибка запроса: ${error.message}</p>
+                            </div>
+                        `;
+                    }
+                } finally {
+                    currentRequest = null;
+                }
+            }
+
+            // Обработчики событий
+            mnemonicInput.addEventListener('input', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(checkWallet, typingDelay);
+            });
+
+            // Скрываем оригинальный select
+            document.getElementById('network').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
